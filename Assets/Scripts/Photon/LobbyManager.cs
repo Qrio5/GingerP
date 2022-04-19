@@ -13,6 +13,7 @@ namespace Qrio
 		public TextMeshProUGUI logText;
 		public TextMeshProUGUI hostName;
 		public TextMeshProUGUI playersCounter;
+		public TMP_InputField inputName;
 
 		public GameObject btnsParent;
 		public GameObject[] btns;
@@ -25,7 +26,15 @@ namespace Qrio
 				btns[i] = btnsParent.transform.GetChild(i).gameObject;
 
 
-			PhotonNetwork.NickName = "Player" + Random.Range(1000, 9999);
+            string nickName = "Player" + Random.Range(1000, 9999);
+            PhotonNetwork.NickName = nickName;
+			inputName.text = nickName;
+			if (PlayerPrefs.GetString("NickName") != "")
+            {
+				PhotonNetwork.NickName = PlayerPrefs.GetString("NickName");
+				inputName.text = PlayerPrefs.GetString("NickName");
+            }
+
 			Log("Player's name is set to " + PhotonNetwork.NickName);
 			if (!PhotonNetwork.IsConnected)
             {
@@ -50,12 +59,22 @@ namespace Qrio
 
 		public void CreateRoom()
 		{
-			PhotonNetwork.CreateRoom(null, new Photon.Realtime.RoomOptions { MaxPlayers = 20 });
+			PhotonNetwork.NickName = inputName.text;
+			PlayerPrefs.SetString("NickName", inputName.text);
+			if (PhotonNetwork.NickName != "")
+				PhotonNetwork.CreateRoom(null, new Photon.Realtime.RoomOptions { MaxPlayers = 20 });
+			else
+				Log("Please enter valid nickname");
 		}
 
 		public void JoinRoom()
 		{
-			PhotonNetwork.JoinRandomRoom();
+			PhotonNetwork.NickName = inputName.text;
+			PlayerPrefs.SetString("NickName", inputName.text);
+			if (PhotonNetwork.NickName != "")
+				PhotonNetwork.JoinRandomRoom();
+			else
+				Log("Please enter valid nickname");
 		}
 
 		public override void OnJoinedRoom()
@@ -65,6 +84,7 @@ namespace Qrio
 
 			btns[0].SetActive(false);
 			btns[1].SetActive(false);
+			btns[4].SetActive(false);
 			btns[2].SetActive(true);
 			btns[3].SetActive(true);
 			if (!PhotonNetwork.IsMasterClient)
@@ -75,6 +95,7 @@ namespace Qrio
 			hostName.text = "Host name: " + PhotonNetwork.MasterClient.NickName;
 			playersCounter.text = $"Players: {PhotonNetwork.CurrentRoom.PlayerCount} / 20";
 		}
+		
 
         public override void OnPlayerEnteredRoom(Player newPlayer)
         {
@@ -97,6 +118,7 @@ namespace Qrio
         {
 			btns[0].SetActive(true);
 			btns[1].SetActive(true);
+			btns[4].SetActive(true);
 			btns[2].SetActive(false);
 			btns[3].SetActive(false);
 
